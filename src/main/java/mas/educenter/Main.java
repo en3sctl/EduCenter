@@ -13,16 +13,16 @@ public class Main {
         // --- MP1: Classes and Attributes ---
 
         // 1. Extent + auto-add in constructor
-        var s1 = new Student("Anna Kowalska", "S001");
-        var s2 = new Student("Mehmet Yilmaz", "S002", 3.8, List.of("EN", "TR", "PL"), "Prof. Nowak");
+        var s1 = new Student("Recep Aktas", "S001");
+        var s2 = new Student("Enes Catal", "S002", 3.8, List.of("EN", "TR", "PL"), "Prof. Werner");
         ObjectPlus.showExtent(Student.class); // extent
 
         // 2. Complex attribute
-        s1.setAddress(new Address("ul. Nowa 5", "Warsaw", "00-001")); // complex attribute
+        s1.setAddress(new Address("ul. Dolna 2", "Warsaw", "00-001")); // complex attribute
         System.out.println("Complex attribute (address): " + s1.getAddress());
 
         // 3. Optional attribute
-        s2.setAdvisor(Optional.of("Prof. Smith")); // optional attribute - present
+        s2.setAdvisor(Optional.of("Prof. Tom")); // optional attribute - present
         System.out.println("Optional attribute (present): " + s2.getAdvisor());
         System.out.println("Optional attribute (empty):   " + s1.getAdvisor()); // optional attribute - empty
 
@@ -41,7 +41,9 @@ public class Main {
         System.out.println("Class attribute (totalCourses):  " + Course.totalCourses); // class attribute
 
         // 6. Derived attribute
-        System.out.println("Derived attribute (totalDuration): " + c1.getTotalDuration() + " min"); // derived attribute - computed from lessonDurations
+        System.out.println("Derived attribute (totalDuration): " + c1.getTotalDuration() + " min"); // derived attribute
+                                                                                                    // - computed from
+                                                                                                    // lessonDurations
         System.out.println("Derived attribute (fullName):      " + s1.getFullName()); // derived attribute
 
         // 7. Class method
@@ -54,12 +56,12 @@ public class Main {
         System.out.println("Override toString(): " + c1.toString()); // override
 
         // 9. Overload
-        System.out.println("Overload getGpa():      " + s2.getGpa());       // overload - no param
-        System.out.println("Overload getGpa(0.5):   " + s2.getGpa(0.5));    // overload - with bonus param
+        System.out.println("Overload getGpa():      " + s2.getGpa()); // overload - no param
+        System.out.println("Overload getGpa(0.5):   " + s2.getGpa(0.5)); // overload - with bonus param
 
         // Create instructors
-        var i1 = new Instructor("Dr. Jan Nowak",
-                new Address("ul. Akademicka 1", "Warsaw", "00-100"),
+        var i1 = new Instructor("Dr. Mariusz Trzaska",
+                new Address("ul. Koszykowa 1", "Warsaw", "00-100"),
                 LocalDate.of(1975, 5, 12),
                 "Professor", List.of("Java", "OOP", "Design Patterns"), 150.0);
         var i2 = new Instructor("Dr. Emily Clark",
@@ -91,11 +93,13 @@ public class Main {
         // 10. Extent persistency
         try {
             // Write extents to file
-            ObjectPlus.writeExtents(new ObjectOutputStream(new FileOutputStream("extents.ser"))); // extent persistency - write
+            ObjectPlus.writeExtents(new ObjectOutputStream(new FileOutputStream("extents.ser"))); // extent persistency
+                                                                                                  // - write
             System.out.println("\nExtents saved to extents.ser");
 
             // Read extents from file
-            ObjectPlus.readExtents(new ObjectInputStream(new FileInputStream("extents.ser"))); // extent persistency - read
+            ObjectPlus.readExtents(new ObjectInputStream(new FileInputStream("extents.ser"))); // extent persistency -
+                                                                                               // read
             System.out.println("Extents loaded from extents.ser");
 
             // Verify loaded extents

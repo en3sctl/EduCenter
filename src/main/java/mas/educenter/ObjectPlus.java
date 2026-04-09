@@ -3,7 +3,7 @@ package mas.educenter;
 import java.io.*;
 import java.util.*;
 
-// Base class for extent management - based on lecture (Wyklad 03)
+// Base class for extent management - based on lecture
 public abstract class ObjectPlus implements Serializable {
 
     private static Map<Class<? extends ObjectPlus>, List<ObjectPlus>> allExtents = new HashMap<>();
