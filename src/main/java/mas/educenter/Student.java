@@ -11,6 +11,8 @@ public class Student extends Person {
     private List<String> languages;    // multi-valued attribute
     private String advisor;            // optional attribute
 
+    private List<Enrollment> enrollments = new ArrayList<>();
+
     public static int totalStudents = 0; // class attribute
 
     // Full constructor (overload)
@@ -65,6 +67,30 @@ public class Student extends Person {
     // Derived attribute - computed, not stored
     public String getFullName() {
         return getName() + " [student]";
+    }
+
+    public List<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
+    public void addEnrollment(Enrollment enrollment) {
+        if (!enrollments.contains(enrollment)) {
+            enrollments.add(enrollment);
+        }
+    }
+
+    public void removeEnrollment(Enrollment enrollment) {
+        if (enrollments.contains(enrollment)) {
+            enrollments.remove(enrollment);
+        }
+    }
+
+    public List<Course> getCourses() {
+        List<Course> result = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            result.add(e.getCourse());
+        }
+        return result;
     }
 
     // Class method - searches extent

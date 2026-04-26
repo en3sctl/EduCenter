@@ -10,6 +10,8 @@ public class Instructor extends Person {
     private List<String> expertise;    // multi-valued attribute
     private double hourlyRate;         // simple attribute
 
+    private List<Course> courses = new ArrayList<>();
+
     public static double averageHourlyRate = 0.0; // class attribute
     private static int instructorCount = 0;
     private static double totalRate = 0.0;
@@ -48,6 +50,22 @@ public class Instructor extends Person {
     }
 
     public double getHourlyRate() { return hourlyRate; }
+
+    public void addCourse(Course course) {
+        if (!courses.contains(course)) {
+            courses.add(course);
+            course.setInstructor(this);
+        }
+    }
+
+    public void removeCourse(Course course) {
+        if (courses.contains(course)) {
+            courses.remove(course);
+            course.setInstructor(null);
+        }
+    }
+
+    public List<Course> getCourses() { return courses; }
 
     // Class method - finds highest paid instructor from extent
     public static Instructor findHighestPaid() {

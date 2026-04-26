@@ -90,6 +90,63 @@ public class Main {
         List<Course> largeCourses = Course.findByCapacity(25); // class method
         System.out.println("Courses with capacity >= 25: " + largeCourses);
 
+        // =======================================================
+        // --- MP2: Associations ---
+        // =======================================================
+        System.out.println("\n=== EduCenter - MP2 Demonstration ===\n");
+
+        // 1. Binary bidirectional association 1-to-* (Instructor <-> Course)
+        i1.addCourse(c1);  // binary bidirectional 1-to-*
+        i1.addCourse(c2);  // binary bidirectional 1-to-*
+        i2.addCourse(c3);  // binary bidirectional 1-to-*
+        System.out.println("Instructor " + i1.getName() + " teaches: " + i1.getCourses());
+        System.out.println("Course '" + c1.getTitle() + "' instructor: " + c1.getInstructor().getName());
+
+        // Demonstrates the fuse - calling the reverse does not duplicate
+        c1.setInstructor(i1); // already set, contains() prevents duplication
+
+        // 2. Association with attribute (Student <-> Enrollment <-> Course)
+        var e1 = new Enrollment(s1, c1, LocalDate.of(2026, 2, 1), "active"); // association with attribute
+        var e2 = new Enrollment(s2, c1, LocalDate.of(2026, 2, 1), "active"); // association with attribute
+        var e3 = new Enrollment(s2, c2, LocalDate.of(2026, 2, 10), "active"); // association with attribute
+        e1.setGrade(4.5);
+        e3.setStatus("completed");
+        System.out.println("Enrollments of " + s2.getName() + ": " + s2.getEnrollments());
+        System.out.println("Enrollments of course '" + c1.getTitle() + "': " + c1.getEnrollments());
+        System.out.println("Courses of " + s2.getName() + ": "
+                + s2.getCourses().stream().map(Course::getTitle).toList());
+
+        // 3. Composition (Course ◆→ Lesson) - Lesson cannot exist without a Course
+        try {
+            Lesson.createLesson(c1, "Variables and Types", 90, 1); // composition
+            Lesson.createLesson(c1, "Control Flow", 90, 2);        // composition
+            Lesson.createLesson(c1, "Methods and Classes", 45, 3); // composition
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
+        System.out.println("Lessons of course '" + c1.getTitle() + "':");
+        for (Lesson l : c1.getLessons()) {
+            System.out.println("  " + l);
+        }
+
+        // 4. Qualified association (Category -> Course by title) - fast lookup via Map
+        cat1.addCourse(c1); // qualified association - indexed by title
+        cat1.addCourse(c3); // qualified association - indexed by title
+        cat2.addCourse(c2); // qualified association - indexed by title
+        Course found = cat1.findCourseByTitle("Java Programming"); // qualified lookup
+        System.out.println("Qualified lookup in '" + cat1.getName() + "' by title='Java Programming': " + found.getTitle());
+
+        // 5. Recursive bidirectional association (Category parent <-> children)
+        var rootCat = new Category("All Courses", "Root category");
+        rootCat.addSubcategory(cat1); // recursive bidirectional - parent/children
+        rootCat.addSubcategory(cat2); // recursive bidirectional - parent/children
+        System.out.println("Subcategories of '" + rootCat.getName() + "': "
+                + rootCat.getSubcategories().stream().map(Category::getName).toList());
+        System.out.println("Parent of '" + cat1.getName() + "': "
+                + cat1.getParentCategory().map(Category::getName).orElse("none"));
+
+        System.out.println("\n=== End of MP2 Demonstration ===\n");
+
         // 10. Extent persistency
         try {
             // Write extents to file
@@ -111,6 +168,6 @@ public class Main {
             System.err.println("Extent persistency error: " + e.getMessage());
         }
 
-        System.out.println("=== End of MP1 Demonstration ===");
+        System.out.println("=== End of Demonstration ===");
     }
 }
