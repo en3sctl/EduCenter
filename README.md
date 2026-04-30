@@ -34,12 +34,15 @@ mvn exec:java -Dexec.mainClass="mas.educenter.Main"
 ```
 
 ## Project Structure
+
+```
 src/
 └── main/
-└── java/
-└── mas/
-└── educenter/
-├── models/       # Entity classes
-├── services/     # Business logic
-└── Main.java     # Entry point
-extents.ser       # Serialized data store
+    └── java/
+        └── mas/
+            └── educenter/
+                ├── models/        # Entity classes
+                ├── services/      # Business logic
+                └── Main.java      # Entry point
+extents.ser                        # Serialized data store
+```
