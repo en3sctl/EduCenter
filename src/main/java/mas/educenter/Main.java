@@ -96,9 +96,9 @@ public class Main {
         System.out.println("\n=== EduCenter - MP2 Demonstration ===\n");
 
         // 1. Binary bidirectional association 1-to-* (Instructor <-> Course)
-        i1.addCourse(c1);  // binary bidirectional 1-to-*
-        i1.addCourse(c2);  // binary bidirectional 1-to-*
-        i2.addCourse(c3);  // binary bidirectional 1-to-*
+        i1.addCourse(c1); // binary bidirectional 1-to-*
+        i1.addCourse(c2); // binary bidirectional 1-to-*
+        i2.addCourse(c3); // binary bidirectional 1-to-*
         System.out.println("Instructor " + i1.getName() + " teaches: " + i1.getCourses());
         System.out.println("Course '" + c1.getTitle() + "' instructor: " + c1.getInstructor().getName());
 
@@ -119,7 +119,7 @@ public class Main {
         // 3. Composition (Course ◆→ Lesson) - Lesson cannot exist without a Course
         try {
             Lesson.createLesson(c1, "Variables and Types", 90, 1); // composition
-            Lesson.createLesson(c1, "Control Flow", 90, 2);        // composition
+            Lesson.createLesson(c1, "Control Flow", 90, 2); // composition
             Lesson.createLesson(c1, "Methods and Classes", 45, 3); // composition
         } catch (Exception ex) {
             System.err.println(ex.getMessage());
@@ -134,7 +134,8 @@ public class Main {
         cat1.addCourse(c3); // qualified association - indexed by title
         cat2.addCourse(c2); // qualified association - indexed by title
         Course found = cat1.findCourseByTitle("Java Programming"); // qualified lookup
-        System.out.println("Qualified lookup in '" + cat1.getName() + "' by title='Java Programming': " + found.getTitle());
+        System.out.println(
+                "Qualified lookup in '" + cat1.getName() + "' by title='Java Programming': " + found.getTitle());
 
         // 5. Recursive bidirectional association (Category parent <-> children)
         var rootCat = new Category("All Courses", "Root category");
@@ -146,6 +147,68 @@ public class Main {
                 + cat1.getParentCategory().map(Category::getName).orElse("none"));
 
         System.out.println("\n=== End of MP2 Demonstration ===\n");
+
+        // =======================================================
+        // --- MP3: Inheritance ---
+        // =======================================================
+        System.out.println("=== EduCenter - MP3 Demonstration ===\n");
+
+        // 1. Disjoint inheritance (Course -> OnlineCourse / InPersonCourse)
+        OnlineCourse onCourse = new OnlineCourse("Python Basics", 50,
+                List.of(60, 60, 60), "Online intro", "Zoom", "https://zoom.us/abc"); // disjoint inheritance
+        InPersonCourse offCourse = new InPersonCourse("Algorithms", 25,
+                List.of(90, 90), "Classroom course", "Room 101", "Main Campus", 25); // disjoint inheritance
+        System.out.println("Disjoint subclass instance: " + onCourse);
+        System.out.println("Disjoint subclass instance: " + offCourse);
+
+        // 2. Abstract class & abstract method (Person.describeRole)
+        // Cannot create a Person directly - it is abstract
+        // Person abstractTest = new Person("X"); // would not compile - abstract class
+        System.out.println("Abstract method via Student: " + s1.describeRole()); // abstract method
+        System.out.println("Abstract method via Instructor: " + i1.describeRole()); // abstract method
+
+        // 3. Polymorphic method calls (same reference type, different runtime behavior)
+        Person[] people = { s1, s2, i1, i2 };
+        for (Person p : people) {
+            System.out.println("Polymorphic call: " + p.describeRole()); // polymorphic method call
+        }
+
+        // 4. Multiple inheritance via interface (extends Student, implements
+        // IInstructor)
+        WorkingStudent ws = new WorkingStudent("Ali Ozturk", "S099", 3.5,
+                List.of("EN", "TR"), null, 60.0); // multiple inheritance via interface
+        ws.addTaughtCourse(c3); // method from IInstructor
+        ws.setGpa(3.7); // method inherited from Student
+        System.out.println("WorkingStudent GPA (from Student):     " + ws.getGpa());
+        System.out.println("WorkingStudent rate (from IInstructor): " + ws.getHourlyRate());
+
+        // 5. Overlapping inheritance (one object plays two roles - Student AND
+        // IInstructor)
+        boolean isStudent = (ws instanceof Student);
+        boolean isInstr = (ws instanceof IInstructor);
+        System.out.println("Overlapping - is Student? " + isStudent + ", is IInstructor? " + isInstr); // overlapping
+                                                                                                       // inheritance
+
+        // 6. Multi-aspect inheritance (role aspect via class hierarchy + gender aspect
+        // via flattening)
+        s1.setGender(Person.Gender.MALE); // multi-aspect - second classification
+        s2.setGender(Person.Gender.MALE); // multi-aspect - second classification
+        i1.setGender(Person.Gender.MALE);
+        i2.setGender(Person.Gender.FEMALE);
+        System.out.println("Multi-aspect: " + i2.getName() + " is " + i2.getGender()
+                + " and " + i2.describeRole());
+
+        // 7. Dynamic inheritance (object changes its class via conversion constructor)
+        Person dynamicPerson = new Student("Kerem Yilmaz", "S003"); // starts as Student
+        System.out.println("Before role change: " + dynamicPerson.describeRole());
+
+        dynamicPerson = new Employee(dynamicPerson, "TA", 2500.0); // dynamic inheritance - now Employee
+        System.out.println("After role change:  " + dynamicPerson.describeRole());
+
+        dynamicPerson = new Instructor(dynamicPerson, "Junior Lecturer", 80.0); // dynamic inheritance - now Instructor
+        System.out.println("After another change: " + dynamicPerson.describeRole());
+
+        System.out.println("\n=== End of MP3 Demonstration ===\n");
 
         // 10. Extent persistency
         try {

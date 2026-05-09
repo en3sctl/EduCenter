@@ -35,6 +35,15 @@ public class Instructor extends Person {
         updateAverage(0.0);
     }
 
+    // Conversion constructor - dynamic inheritance support
+    public Instructor(Person prev, String title, double hourlyRate) {
+        super(prev.getName(), prev.getAddress(), prev.getBirthDate());
+        this.title = title;
+        this.expertise = new ArrayList<>();
+        this.hourlyRate = hourlyRate;
+        updateAverage(hourlyRate);
+    }
+
     private static void updateAverage(double rate) {
         instructorCount++;
         totalRate += rate;
@@ -80,6 +89,12 @@ public class Instructor extends Person {
             System.out.println("Instructor extent not found.");
         }
         return highest;
+    }
+
+    // Polymorphic implementation of the abstract role method
+    @Override
+    public String describeRole() {
+        return "Instructor (" + title + ") teaching " + courses.size() + " course(s)";
     }
 
     @Override

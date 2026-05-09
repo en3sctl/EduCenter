@@ -35,6 +35,17 @@ public class Student extends Person {
         totalStudents++;
     }
 
+    // Conversion constructor - used for dynamic inheritance
+    // Allows turning an existing Person into a Student
+    public Student(Person prev, String studentNo, double gpa) {
+        super(prev.getName(), prev.getAddress(), prev.getBirthDate());
+        this.studentNo = studentNo;
+        this.gpa = gpa;
+        this.languages = new ArrayList<>();
+        this.advisor = null;
+        totalStudents++;
+    }
+
     public String getStudentNo() { return studentNo; }
 
     // Overloaded method - no param
@@ -106,6 +117,12 @@ public class Student extends Person {
             System.out.println("Student extent not found.");
         }
         return result;
+    }
+
+    // Polymorphic implementation of the abstract role method
+    @Override
+    public String describeRole() {
+        return "Student with GPA " + gpa + " (" + studentNo + ")";
     }
 
     @Override

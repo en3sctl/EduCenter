@@ -5,9 +5,13 @@ import java.time.LocalDate;
 // Abstract class representing a person
 public abstract class Person extends ObjectPlus {
 
+    // Multi-aspect: second classification dimension (besides role: Student/Instructor/Employee)
+    public enum Gender { MALE, FEMALE, OTHER }
+
     private String name;           // simple attribute
     private Address address;       // complex attribute
     private LocalDate birthDate;   // simple attribute
+    private Gender gender;         // multi-aspect classification
 
     // Full constructor
     public Person(String name, Address address, LocalDate birthDate) {
@@ -31,6 +35,12 @@ public abstract class Person extends ObjectPlus {
 
     public LocalDate getBirthDate() { return birthDate; }
     public void setBirthDate(LocalDate birthDate) { this.birthDate = birthDate; }
+
+    public Gender getGender() { return gender; }
+    public void setGender(Gender gender) { this.gender = gender; }
+
+    // Abstract method - each subclass describes its role differently (polymorphism)
+    public abstract String describeRole();
 
     @Override
     public String toString() {
