@@ -1,14 +1,26 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 // Multiple inheritance via interface: extends Student AND implements IInstructor
 // Demonstrates overlapping inheritance - a person who is both student and instructor
+@Entity
+@Table(name = "working_students")
 public class WorkingStudent extends Student implements IInstructor {
 
     private double hourlyRate;
+
+    @ManyToMany
+    @JoinTable(name = "working_student_taught_courses",
+            joinColumns = @JoinColumn(name = "working_student_id"),
+            inverseJoinColumns = @JoinColumn(name = "course_id"))
     private List<Course> taughtCourses = new ArrayList<>();
+
+    protected WorkingStudent() {
+        super();
+    }
 
     public WorkingStudent(String name, String studentNo, double gpa,
                           List<String> languages, String advisor, double hourlyRate) {

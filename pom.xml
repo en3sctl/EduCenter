@@ -10,13 +10,42 @@
     <packaging>jar</packaging>
 
     <name>EduCenter</name>
-    <description>Educational Center Management System - MAS MP1</description>
+    <description>Educational Center Management System - MAS</description>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <hibernate.version>6.4.4.Final</hibernate.version>
+        <h2.version>2.2.224</h2.version>
+        <jakarta.persistence.version>3.1.0</jakarta.persistence.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${hibernate.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>${jakarta.persistence.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
@@ -30,6 +59,15 @@
                             <mainClass>mas.educenter.Main</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <mainClass>mas.educenter.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

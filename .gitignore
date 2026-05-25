@@ -3,7 +3,7 @@
 .vscode/
 *.iml
 
-# Claude Code
+# Editor / tooling caches
 .claude/
 
 # Maven build output

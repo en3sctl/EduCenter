@@ -1,5 +1,8 @@
 package mas.educenter;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+
 import java.io.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -210,27 +213,176 @@ public class Main {
 
         System.out.println("\n=== End of MP3 Demonstration ===\n");
 
-        // 10. Extent persistency
+        // In-memory extent persistency via Java serialization (from MP1)
         try {
-            // Write extents to file
             ObjectPlus.writeExtents(new ObjectOutputStream(new FileOutputStream("extents.ser"))); // extent persistency
                                                                                                   // - write
             System.out.println("\nExtents saved to extents.ser");
 
-            // Read extents from file
             ObjectPlus.readExtents(new ObjectInputStream(new FileInputStream("extents.ser"))); // extent persistency -
                                                                                                // read
             System.out.println("Extents loaded from extents.ser");
 
-            // Verify loaded extents
             System.out.println("\n=== Extents after deserialization ===");
             ObjectPlus.showExtent(Student.class);
             ObjectPlus.showExtent(Course.class);
 
-        } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Extent persistency error: " + e.getMessage());
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println("Extent persistency error: " + ex.getMessage());
         }
 
+        // =======================================================
+        // --- MP4: Relational Model + ORM (Hibernate) ---
+        // =======================================================
+        System.out.println("\n=== EduCenter - MP4 Demonstration ===\n");
+        runMp4Demo();
+
         System.out.println("=== End of Demonstration ===");
+    }
+
+    // MP4 demo - uses Hibernate to write objects into an in-memory H2 database
+    // and read them back. Tables are created from the @Entity annotations.
+    private static void runMp4Demo() {
+        EntityManager em = HibernateUtil.getEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            // Each @Entity class maps to its own table.
+            // Address is @Embeddable - its fields become columns inside the persons table (complex attribute).
+            Address addr = new Address("ul. Nowowiejska 5", "Warsaw", "02-009");
+
+            // Person hierarchy uses JOINED inheritance - persons table + one extra table per subclass
+            Student newStudent = new Student("Zeynep Demir", "S100", 3.9,
+                    List.of("EN", "TR", "DE"), "Prof. Lambert"); // multi-valued + optional attribute
+            newStudent.setAddress(addr); // complex attribute (embedded)
+            newStudent.setBirthDate(LocalDate.of(2001, 6, 12));
+            newStudent.setGender(Person.Gender.FEMALE);
+
+            Instructor newInstructor = new Instructor("Dr. Adam Nowak",
+                    new Address("ul. Akademicka 7", "Warsaw", "02-100"),
+                    LocalDate.of(1972, 3, 5),
+                    "Professor", List.of("Hibernate", "JPA"), 175.0);
+
+            Employee newEmployee = new Employee("Pawel Kowalski", "Secretary", 4200.0);
+
+            // Course hierarchy also uses JOINED inheritance
+            OnlineCourse newOnline = new OnlineCourse("ORM Fundamentals", 40,
+                    List.of(60, 90), "Online ORM course", "Teams", "https://teams.ms/orm-101");
+            InPersonCourse newOffline = new InPersonCourse("Advanced JPA", 20,
+                    List.of(90, 90, 90), "On-site lab", "Room 202", "PJATK", 20);
+
+            newInstructor.addCourse(newOnline);  // 1-* association - FK lives in courses table
+            newInstructor.addCourse(newOffline);
+
+            Category dbCat = new Category("Persistence", "DB and ORM related courses");
+            dbCat.addCourse(newOnline);          // qualified association - just 1-* in the DB
+            dbCat.addCourse(newOffline);
+
+            // Composition - lessons are saved together with the course
+            try {
+                Lesson.createLesson(newOnline, "Session/EntityManager", 60, 1);
+                Lesson.createLesson(newOnline, "Mapping & Queries", 90, 2);
+            } catch (Exception ex) {
+                System.err.println(ex.getMessage());
+            }
+
+            // Association class with own attributes - its own table with 2 foreign keys
+            Enrollment newEnrollment = new Enrollment(newStudent, newOnline,
+                    LocalDate.of(2026, 3, 1), "active");
+            newEnrollment.setGrade(4.0);
+
+            // Extent persistence - save the objects into the database
+            em.persist(newInstructor);
+            em.persist(newOnline);
+            em.persist(newOffline);
+            em.persist(newStudent);
+            em.persist(newEmployee);
+            em.persist(dbCat);
+            for (Lesson l : newOnline.getLessons()) {
+                em.persist(l);
+            }
+            em.persist(newEnrollment);
+
+            em.getTransaction().commit();
+            em.clear(); // clear cache so the next reads really hit the database
+
+            // Polymorphic query - one query returns objects from every Person subclass
+            TypedQuery<Person> personQuery = em.createQuery("SELECT p FROM Person p", Person.class);
+            System.out.println("Inheritance - polymorphic query on Person:");
+            for (Person p : personQuery.getResultList()) {
+                System.out.println("  [" + p.getClass().getSimpleName() + "] "
+                        + p.getName() + " -> " + p.describeRole()); // override + polymorphism
+            }
+
+            // Query against only one subclass (Hibernate joins persons + students for us)
+            TypedQuery<Student> studentQuery = em.createQuery(
+                    "SELECT s FROM Student s WHERE s.gpa >= :min", Student.class);
+            studentQuery.setParameter("min", 3.5);
+            System.out.println("\nInheritance - subtype query (Students with gpa >= 3.5):");
+            for (Student s : studentQuery.getResultList()) {
+                System.out.println("  " + s);
+            }
+
+            // Same polymorphic pattern on the Course hierarchy
+            TypedQuery<Course> courseQuery = em.createQuery("SELECT c FROM Course c", Course.class);
+            System.out.println("\nInheritance - polymorphic query on Course:");
+            for (Course c : courseQuery.getResultList()) {
+                System.out.println("  [" + c.getClass().getSimpleName() + "] " + c.getTitle());
+            }
+
+            // 1-* association loaded with the courses side already fetched
+            TypedQuery<Instructor> instrQuery = em.createQuery(
+                    "SELECT DISTINCT i FROM Instructor i LEFT JOIN FETCH i.courses", Instructor.class);
+            System.out.println("\nAssociation - instructor with their courses:");
+            for (Instructor i : instrQuery.getResultList()) {
+                System.out.println("  " + i.getName() + " teaches: "
+                        + i.getCourses().stream().map(Course::getTitle).toList());
+            }
+
+            TypedQuery<Enrollment> enrollQuery = em.createQuery(
+                    "SELECT e FROM Enrollment e", Enrollment.class);
+            System.out.println("\nAssociation class (Enrollment) read back from DB:");
+            for (Enrollment e : enrollQuery.getResultList()) {
+                System.out.println("  " + e);
+            }
+
+            // Check that the embedded Address columns come back correctly
+            Student reloaded = em.createQuery(
+                    "SELECT s FROM Student s WHERE s.studentNo = :no", Student.class)
+                    .setParameter("no", "S100")
+                    .getSingleResult();
+            System.out.println("\nComplex attribute (embedded Address) loaded from DB: "
+                    + reloaded.getAddress());
+
+            // Optional attribute survived the save/load round trip
+            System.out.println("Optional attribute (advisor) loaded from DB: " + reloaded.getAdvisor());
+
+            // Multi-valued attribute - languages live in a separate join table
+            System.out.println("Multi-valued attribute (languages) loaded from DB: " + reloaded.getLanguages());
+
+            // Derived attribute is computed in Java, not stored in any column
+            Course reloadedCourse = em.find(OnlineCourse.class, newOnline.getId());
+            System.out.println("Derived attribute (totalDuration) on reloaded course: "
+                    + reloadedCourse.getTotalDuration() + " min");
+
+            // Class attribute is marked @Transient - it stays in the JVM, no DB column for it
+            System.out.println("Class attribute Student.totalStudents (not persisted): "
+                    + Student.totalStudents);
+
+            // Class method still works after reload
+            System.out.println("Class method Course.findByCapacity(20): "
+                    + Course.findByCapacity(20).stream().map(Course::getTitle).toList());
+
+        } catch (RuntimeException ex) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            System.err.println("MP4 demo error: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            em.close();
+            HibernateUtil.shutdown();
+            System.out.println("\n=== End of MP4 Demonstration ===\n");
+        }
     }
 }

@@ -1,23 +1,42 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Entity
+@Table(name = "categories")
 public class Category extends ObjectPlus {
 
-    private String name;
-    private String description;
-    private Category parentCategory; // optional attribute (self-reference)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
+    @Column(nullable = false)
+    private String name;
+
+    private String description;
+
+    // Recursive 1-* association - parent_id points back to the same table
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Category parentCategory;
+
+    @OneToMany(mappedBy = "parentCategory")
     private List<Category> subcategories = new ArrayList<>();
 
-    // qualifier-based lookup for fast access
+    // Qualified association - the qualifier (course title) is used as the map key
+    @OneToMany(mappedBy = "category")
+    @MapKey(name = "title")
     private Map<String, Course> coursesByTitle = new HashMap<>();
 
-    // Full constructor
+    public Category() {
+        super();
+    }
+
     public Category(String name, String description, Category parentCategory) {
         super();
         this.name = name;
@@ -25,15 +44,14 @@ public class Category extends ObjectPlus {
         this.parentCategory = parentCategory;
     }
 
-    // Minimal constructor (no parent)
     public Category(String name, String description) {
         this(name, description, null);
     }
 
+    public Long getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
 
-    // Optional attribute
     public Optional<Category> getParentCategory() {
         return Optional.ofNullable(parentCategory);
     }

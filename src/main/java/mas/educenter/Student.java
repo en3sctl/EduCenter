@@ -1,19 +1,36 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Entity
+@Table(name = "students")
 public class Student extends Person {
 
+    @Column(nullable = false, unique = true)
     private String studentNo;          // simple attribute
+
     private double gpa;                // simple attribute
-    private List<String> languages;    // multi-valued attribute
+
+    @ElementCollection                 // multi-valued attribute - separate join table
+    @CollectionTable(name = "student_languages", joinColumns = @JoinColumn(name = "student_id"))
+    @Column(name = "language")
+    private List<String> languages;
+
+    @Column(nullable = true)
     private String advisor;            // optional attribute
 
+    @OneToMany(mappedBy = "student")
     private List<Enrollment> enrollments = new ArrayList<>();
 
-    public static int totalStudents = 0; // class attribute
+    @Transient                         // class attribute - not persisted
+    public static int totalStudents = 0;
+
+    protected Student() {
+        super();
+    }
 
     // Full constructor (overload)
     public Student(String name, String studentNo, double gpa, List<String> languages, String advisor) {
@@ -36,7 +53,6 @@ public class Student extends Person {
     }
 
     // Conversion constructor - used for dynamic inheritance
-    // Allows turning an existing Person into a Student
     public Student(Person prev, String studentNo, double gpa) {
         super(prev.getName(), prev.getAddress(), prev.getBirthDate());
         this.studentNo = studentNo;
@@ -76,6 +92,7 @@ public class Student extends Person {
     }
 
     // Derived attribute - computed, not stored
+    @Transient
     public String getFullName() {
         return getName() + " [student]";
     }
@@ -104,7 +121,7 @@ public class Student extends Person {
         return result;
     }
 
-    // Class method - searches extent
+    // Class method - searches in-memory extent
     public static List<Student> findByLanguage(String lang) {
         List<Student> result = new ArrayList<>();
         try {

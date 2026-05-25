@@ -1,19 +1,38 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
 
 // Abstract class representing a person
+// Inheritance in the relational model - JOINED strategy: separate table for each subclass
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "persons")
 public abstract class Person extends ObjectPlus {
 
     // Multi-aspect: second classification dimension (besides role: Student/Instructor/Employee)
     public enum Gender { MALE, FEMALE, OTHER }
 
-    private String name;           // simple attribute
-    private Address address;       // complex attribute
-    private LocalDate birthDate;   // simple attribute
-    private Gender gender;         // multi-aspect classification
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    // Full constructor
+    @Column(nullable = false)
+    private String name;            // simple attribute
+
+    @Embedded                       // complex attribute - mapped as columns inside persons table
+    private Address address;
+
+    private LocalDate birthDate;    // simple attribute
+
+    @Enumerated(EnumType.STRING)    // multi-aspect classification stored as string
+    private Gender gender;
+
+    // No-arg constructor required by JPA
+    protected Person() {
+        super();
+    }
+
     public Person(String name, Address address, LocalDate birthDate) {
         super();
         this.name = name;
@@ -21,11 +40,12 @@ public abstract class Person extends ObjectPlus {
         this.birthDate = birthDate;
     }
 
-    // Minimal constructor
     public Person(String name) {
         super();
         this.name = name;
     }
+
+    public Long getId() { return id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

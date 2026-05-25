@@ -1,31 +1,57 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+// Inheritance in the relational model - JOINED strategy: one table per class
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "courses")
 public class Course extends ObjectPlus {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String title;                  // simple attribute
+
     private int maxCapacity;               // simple attribute
-    private List<Integer> lessonDurations; // multi-valued attribute
+
+    @ElementCollection                     // multi-valued attribute
+    @CollectionTable(name = "course_lesson_durations", joinColumns = @JoinColumn(name = "course_id"))
+    @Column(name = "duration")
+    private List<Integer> lessonDurations;
+
+    @Column(nullable = true)
     private String description;            // optional attribute
 
-    // lessons belonging to this course (composition)
+    // Composition (Course ◆→ Lesson) - lessons are deleted together with the course
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lesson> lessons = new ArrayList<>();
 
-    // enrollments of students to this course
+    @OneToMany(mappedBy = "course")
     private List<Enrollment> enrollments = new ArrayList<>();
 
-    // the instructor teaching this course
+    // 1-* association with Instructor - foreign key lives in this table
+    @ManyToOne
+    @JoinColumn(name = "instructor_id")
     private Instructor instructor;
 
-    // category this course belongs to
+    // Qualified association with Category - in the database it's just a 1-*
+    @ManyToOne
+    @JoinColumn(name = "category_id")
     private Category category;
 
+    @Transient
     public static int totalCourses = 0;    // class attribute
 
-    // Full constructor
+    public Course() {
+        super();
+    }
+
     public Course(String title, int maxCapacity, List<Integer> lessonDurations, String description) {
         super();
         this.title = title;
@@ -35,7 +61,6 @@ public class Course extends ObjectPlus {
         totalCourses++;
     }
 
-    // Minimal constructor
     public Course(String title, int maxCapacity) {
         super();
         this.title = title;
@@ -44,6 +69,8 @@ public class Course extends ObjectPlus {
         this.description = null;
         totalCourses++;
     }
+
+    public Long getId() { return id; }
 
     public String getTitle() { return title; }
     public int getMaxCapacity() { return maxCapacity; }
@@ -64,6 +91,7 @@ public class Course extends ObjectPlus {
     }
 
     // Derived attribute - sum of lesson durations, not stored
+    @Transient
     public int getTotalDuration() {
         int total = 0;
         for (int d : lessonDurations) {
@@ -72,7 +100,6 @@ public class Course extends ObjectPlus {
         return total;
     }
 
-    // package-private - called only by Lesson.createLesson
     void addLesson(Lesson lesson) {
         if (!lessons.contains(lesson)) {
             lessons.add(lesson);
@@ -83,7 +110,6 @@ public class Course extends ObjectPlus {
         return lessons;
     }
 
-    // removing the course also removes all its lessons
     public void removeCourse() {
         for (Lesson l : lessons) {
             Lesson.disconnect(l);
@@ -130,12 +156,10 @@ public class Course extends ObjectPlus {
 
     public Category getCategory() { return category; }
 
-    // Class method
     public static int getTotalCourses() {
         return totalCourses;
     }
 
-    // Class method - finds courses with at least given capacity
     public static List<Course> findByCapacity(int min) {
         List<Course> result = new ArrayList<>();
         try {

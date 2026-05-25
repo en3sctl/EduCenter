@@ -1,13 +1,21 @@
 package mas.educenter;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import java.util.List;
 
 // Disjoint subclass of Course - taught physically in a classroom
+@Entity
+@Table(name = "in_person_courses")
 public class InPersonCourse extends Course {
 
     private String room;
     private String campus;
     private int maxSeats;
+
+    public InPersonCourse() {
+        super();
+    }
 
     public InPersonCourse(String title, int maxCapacity, List<Integer> lessonDurations,
                           String description, String room, String campus, int maxSeats) {

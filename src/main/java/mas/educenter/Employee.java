@@ -1,13 +1,21 @@
 package mas.educenter;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 
 // Disjoint inheritance: Person -> Student / Instructor / Employee
+@Entity
+@Table(name = "employees")
 public class Employee extends Person {
 
     private String position;
     private double salary;
     private LocalDate hireDate;
+
+    protected Employee() {
+        super();
+    }
 
     public Employee(String name, Address address, LocalDate birthDate,
                     String position, double salary, LocalDate hireDate) {
@@ -25,7 +33,6 @@ public class Employee extends Person {
     }
 
     // Conversion constructor - used for dynamic inheritance
-    // Copies the person's basic data and assigns new role-specific data
     public Employee(Person prev, String position, double salary) {
         super(prev.getName(), prev.getAddress(), prev.getBirthDate());
         this.position = position;

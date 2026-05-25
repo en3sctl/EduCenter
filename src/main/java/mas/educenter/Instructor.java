@@ -1,22 +1,38 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "instructors")
 public class Instructor extends Person {
 
     private String title;              // simple attribute
-    private List<String> expertise;    // multi-valued attribute
+
+    @ElementCollection                 // multi-valued attribute
+    @CollectionTable(name = "instructor_expertise", joinColumns = @JoinColumn(name = "instructor_id"))
+    @Column(name = "expertise")
+    private List<String> expertise;
+
     private double hourlyRate;         // simple attribute
 
+    @OneToMany(mappedBy = "instructor")
     private List<Course> courses = new ArrayList<>();
 
+    @Transient
     public static double averageHourlyRate = 0.0; // class attribute
+
+    @Transient
     private static int instructorCount = 0;
+    @Transient
     private static double totalRate = 0.0;
 
-    // Full constructor
+    protected Instructor() {
+        super();
+    }
+
     public Instructor(String name, Address address, LocalDate birthDate,
                       String title, List<String> expertise, double hourlyRate) {
         super(name, address, birthDate);
@@ -26,7 +42,6 @@ public class Instructor extends Person {
         updateAverage(hourlyRate);
     }
 
-    // Minimal constructor
     public Instructor(String name, String title) {
         super(name);
         this.title = title;

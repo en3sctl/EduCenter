@@ -1,18 +1,37 @@
 package mas.educenter;
 
+import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
 // Part of Course composition - cannot exist without a Course
+@Entity
+@Table(name = "lessons")
 public class Lesson extends ObjectPlus {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String title;
+
+    @Column(name = "duration_min")
     private int duration;       // in minutes
+
+    @Column(name = "lesson_order")
     private int order;          // lesson order in the course
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;      // the whole
 
-    // Keeps track of all lessons connected to a course (part can't be shared)
+    @Transient
     private static Set<Lesson> allLessons = new HashSet<>();
+
+    // Protected no-arg constructor for JPA only
+    protected Lesson() {
+        super();
+    }
 
     // Private constructor - prevents creating a lesson without a course
     private Lesson(Course course, String title, int duration, int order) {
@@ -34,7 +53,6 @@ public class Lesson extends ObjectPlus {
         return lesson;
     }
 
-    // Called by Course when the whole is destroyed
     static boolean isConnected(Lesson lesson) {
         return allLessons.contains(lesson);
     }
@@ -43,6 +61,7 @@ public class Lesson extends ObjectPlus {
         allLessons.remove(lesson);
     }
 
+    public Long getId() { return id; }
     public String getTitle() { return title; }
     public int getDuration() { return duration; }
     public int getOrder() { return order; }
